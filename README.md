@@ -1,70 +1,121 @@
-# Ministry of Justice Template Repository
+# modernisation-platform-slackbot
 
-[![Ministry of Justice Repository Compliance Badge](https://github-community.service.justice.gov.uk/repository-standards/api/template-repository/badge)](https://github-community.service.justice.gov.uk/repository-standards/template-repository)
+## Purpose
 
-This template repository equips you with the default initial files required for a Ministry of Justice GitHub repository.
+Increase visibility of pull request check status for teams using the Modernisation Platform, by surfacing GitHub check results directly into Slack.
 
-## Included Files
+## How it works
 
-The repository comes with the following preset files:
+There are two components:
 
-- LICENSE
-- .gitignore
-- CODEOWNERS
-- dependabot.yml
-- GitHub Actions example files
-- Ministry of Justice Compliance Badge (public repositories only)
+1. **[API](api/)** — a Go service that processes incoming Slack messages, looks up the status of pull request checks via the GitHub API, and returns results to the Slack bot.
+2. **[Slackbot](slackbot/)** — a Python service (using Slack Bolt) that watches a Slack channel for relevant messages. When a result is received from the API it adds an emoji reaction to the message in the channel.
 
-## Setup Instructions
+## Repository structure
 
-Once you've created your repository using this template, ensure the following steps:
-
-### Update README
-
-Edit this README.md file to document your project accurately. Take the time to create a clear, engaging, and informative README.md file. Include information like what your project does, how to install and run it, how to contribute, and any other pertinent details.
-
-### Update repository description
-
-After you've created your repository, GitHub provides a brief description field that appears on the top of your repository's main page. This is a summary that gives visitors quick insight into the project. Using this field to provide a succinct overview of your repository is highly recommended.
-
-This description and your README.md will be one of the first things people see when they visit your repository. It's a good place to make a strong, concise first impression. Remember, this is often visible in search results on GitHub and search engines, so it's also an opportunity to help people discover your project.
-
-### Grant Team Permissions
-
-Assign permissions to the appropriate Ministry of Justice teams. Ensure at least one team is granted Admin permissions. Whenever possible, assign permissions to teams rather than individual users.
-
-Prefer to user GitHub Teams over individual access to repositories. Where appropriate, ensure GitHub Teams used are related to a Parent Team associated with a Business Unit to help ensure ownership can be easily identified.
-
-### Read about the GitHub repository standards
-
-Familiarise yourself with the Ministry of Justice GitHub Repository Standards. These standards ensure consistency, maintainability, and best practices across all our repositories.
-
-You can find the standards [here](https://github-community.service.justice.gov.uk/repository-standards/guidance).
-
-Please read and understand these standards thoroughly and enable them when you feel comfortable.
-
-### Modify the GitHub Standards Badge
-
-Once you've ensured that all the [GitHub Repository Standards](https://github-community.service.justice.gov.uk/repository-standards/guidance) have been applied to your repository, it's time to update the Ministry of Justice (MoJ) Compliance Badge located in the README file.
-
-The badge demonstrates that your repository is compliant with MoJ's standards.
-
-To update the badge, replace the `template-repository` in the badge URL with your repository's name. The badge URL should look like this:
-
-```markdown
-[![Ministry of Justice Repository Compliance Badge](https://github-community.service.justice.gov.uk/repository-standards/api/${your-repository-name}/badge)](https://github-community.service.justice.gov.uk/repository-standards/${your-reposistory-name})
+```
+api/          Go API service
+slackbot/     Python Slack bot service
+deploy/       Helm chart for Kubernetes deployment
+.github/
+  workflows/  GitHub Actions CI/CD workflows
 ```
 
-**Please note** the badge will not function correctly if your repository is internal or private. In this case, you may remove the badge from your README.
+## Local development
 
-### Update CODEOWNERS
+API-specific build and test commands live in [api/README.md](api/README.md).
+Slack bot details live in [slackbot/README.md](slackbot/README.md).
 
-(Optional) Modify the CODEOWNERS file to specify the teams or users authorized to approve pull requests.
+Before starting the local stack, create a `.env` file in the repository root:
 
-### Configure Dependabot
+```dotenv
+GITHUB_TOKEN=
+GITHUB_URL=https://github.com/ministryofjustice/modernisation-platform-environments.git
+GITHUB_USER=
+SLACK_BOT_TOKEN=
+SLACK_SIGNING_SECRET=
+SLACK_APP_TOKEN=
+API_URL=http://api:3000
+```
 
-Adapt the dependabot.yml file to match your project's [dependency manager](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#package-ecosystem) and to enable [automated pull requests for package updates](https://docs.github.com/en/code-security/supply-chain-security).
+| Variable | Description | Where to obtain |
+|---|---|---|
+| `GITHUB_TOKEN` | Personal access token with access to the environments repository | GitHub Settings → Developer settings → Personal access tokens |
+| `GITHUB_URL` | Repository URL used by the API and Slack bot for PR matching | Use `https://github.com/ministryofjustice/modernisation-platform-environments.git` |
+| `GITHUB_USER` | GitHub username associated with `GITHUB_TOKEN` | Your GitHub profile |
+| `SLACK_BOT_TOKEN` | Bot user OAuth token | Slack app → OAuth & Permissions |
+| `SLACK_SIGNING_SECRET` | Signing secret for request verification | Slack app → Basic Information |
+| `SLACK_APP_TOKEN` | App-level token for Socket Mode | Slack app → Basic Information → App-Level Tokens |
+| `API_URL` | API base URL used by the Slack bot | Keep as `http://api:3000` for local Docker Compose |
 
-### Dependency Review
+Build and start the full stack from the repository root:
 
-If your repository is private with no GitHub Advanced Security license, remove the `.github/workflows/dependency-review.yml` file.
+```sh
+docker compose up --build
+```
+
+This starts both services defined in [docker-compose.yml](docker-compose.yml):
+
+- API on `http://localhost:3001`
+- Slack bot connected to the API via `http://api:3000`
+
+To stop the stack:
+
+```sh
+docker compose down
+```
+
+To rebuild a single service:
+
+```sh
+docker compose build api
+docker compose build slackbot
+```
+
+## GitHub Actions workflows
+
+| Workflow | Trigger | Purpose |
+|---|---|---|
+| [Build and deploy](.github/workflows/build-and-deploy.yaml) | Pull request, push to `main`, manual | Builds Docker images, pushes to ECR, deploys to Kubernetes |
+| [Reusable build and deploy](.github/workflows/reusable-build-and-deploy.yaml) | Called by build-and-deploy | Shared build and deploy logic for all environments |
+| [Test Go code](.github/workflows/go-tests.yaml) | Pull request, push to `main` | Runs Go unit tests with race detection and uploads coverage to Codecov |
+| [Lint and vet Go code](.github/workflows/go-vert-lint-deps.yaml) | Pull request (`.go` files changed), manual | Runs `gofumpt` formatting check and `golangci-lint` |
+| [Code quality tests](.github/workflows/code-analysis.yaml) | Pull request to `main` | Runs CodeQL static analysis on the Go codebase |
+| [Dependency review](.github/workflows/dependency-review.yml) | Pull request to `main` | Blocks critical severity dependency vulnerabilities |
+| [Test Dockerfile](.github/workflows/test-dockerfile.yaml) | Pull request | Builds the API Docker image and runs container structure tests |
+
+### Deployment pipeline
+
+The build-and-deploy workflow always runs development first, then production in sequence:
+
+```
+Pull request / push to main
+        │
+        ▼
+  Deploy → development
+        │  (must succeed)
+        ▼
+  Deploy → production  ← requires environment approval + main branch only
+```
+
+- **Development** deploys on every pull request or push to `main`. For manual runs, a target branch can be specified via the `development_branch` input.
+- **Production** runs only when the ref is `main`, after development succeeds, and requires approval configured on the `production` GitHub environment.
+
+## Helm chart
+
+The Kubernetes deployment is managed by the Helm chart in [deploy/](deploy/).
+
+Values are layered in order:
+
+1. [deploy/values.yaml](deploy/values.yaml) — shared defaults for all environments
+2. `deploy/values-<environment>.yaml` — environment-specific overrides
+
+| Parameter | Development | Production |
+|---|---|---|
+| `api.replicas` | 1 | 2 |
+| `slackbot.replicas` | 1 | 2 |
+| `deploymentStrategy.type` | `Recreate` | `RollingUpdate` |
+| `slackbot.environment` | `development` | `production` |
+
+Runtime values (ECR URL, image tags, namespace, ingress identifier) are passed at deploy time via `--set-string` from the workflow.
+
