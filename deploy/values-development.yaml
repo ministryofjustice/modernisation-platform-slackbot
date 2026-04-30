@@ -1,0 +1,9 @@
+slackbot:
+  environment: development
+  replicas: 1
+
+api:
+  replicas: 1
+
+deploymentStrategy:
+  type: Recreate

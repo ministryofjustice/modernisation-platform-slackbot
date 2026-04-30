@@ -1,0 +1,32 @@
+{
+  "plan": {
+    "name_patterns": [
+      "^plan"
+    ]
+  },
+  "static_analysis": {
+    "name_patterns": [
+      "Terraform Static Analysis"
+    ]
+  },
+  "linting": {
+    "name_patterns": [
+      "TFLint Scan"
+    ]
+  },
+  "security_scanning": {
+    "name_patterns": [
+      "Checkov Scan"
+    ]
+  },
+  "policy_validation": {
+    "name_patterns": [
+      "run-opa-policy-tests"
+    ]
+  },
+  "binary_file_check": {
+    "name_patterns": [
+      "Check for Binary and Archive Files"
+    ]
+  }
+}

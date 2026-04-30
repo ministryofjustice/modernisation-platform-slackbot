@@ -1,0 +1,30 @@
+
+# Docker Compose file used for local deployment and testing.
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: hammer-api
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_URL=${GITHUB_URL}
+      - GITHUB_USER=${GITHUB_USER}
+    ports:
+      - "3001:3000"  # host:container
+
+  slackbot:
+    build:
+      context: ./slackbot
+      dockerfile: Dockerfile
+    container_name: slackbot
+    depends_on:
+      - api
+    environment:
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET}
+      - SLACK_APP_TOKEN=${SLACK_APP_TOKEN}
+      - GITHUB_URL=${GITHUB_URL}
+      - API_URL=${API_URL:-http://api:3000}
+    ports:
+      - "3000:3000"  # optional, for local access
