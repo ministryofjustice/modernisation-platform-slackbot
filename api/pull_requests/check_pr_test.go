@@ -66,9 +66,9 @@ func TestCheckPRStatus(t *testing.T) {
 			},
 			want: []InvalidChecks{
 				{
-					Name:           "successful check",
-					Message:        "this check completed successfully",
-					Status:         Success,
+					Name:       "successful check",
+					Message:    "this check completed successfully",
+					Status:     Success,
 					RetryAfter: 0,
 				},
 			},
@@ -90,9 +90,9 @@ func TestCheckPRStatus(t *testing.T) {
 			},
 			want: []InvalidChecks{
 				{
-					Name:           "skipped check",
-					Message:        "this check was skipped",
-					Status:         Success,
+					Name:       "skipped check",
+					Message:    "this check was skipped",
+					Status:     Success,
 					RetryAfter: 0,
 				},
 			},
@@ -114,9 +114,9 @@ func TestCheckPRStatus(t *testing.T) {
 			},
 			want: []InvalidChecks{
 				{
-					Name:           "failed check",
-					Message:        "this check failed, check your pr and ammend",
-					Status:         Failure,
+					Name:       "failed check",
+					Message:    "this check failed, check your pr and ammend",
+					Status:     Failure,
 					RetryAfter: 0,
 				},
 			},
@@ -138,9 +138,9 @@ func TestCheckPRStatus(t *testing.T) {
 			},
 			want: []InvalidChecks{
 				{
-					Name:           "action required check",
-					Message:        "this check failed because an action is required, check your pr and ammend",
-					Status:         Failure,
+					Name:       "action required check",
+					Message:    "this check failed because an action is required, check your pr and ammend",
+					Status:     Failure,
 					RetryAfter: 0,
 				},
 			},
@@ -162,9 +162,9 @@ func TestCheckPRStatus(t *testing.T) {
 			},
 			want: []InvalidChecks{
 				{
-					Name:           "cancelled check",
-					Message:        "this check failed because somebody manually cancelled the check",
-					Status:         Failure,
+					Name:       "cancelled check",
+					Message:    "this check failed because somebody manually cancelled the check",
+					Status:     Failure,
 					RetryAfter: 0,
 				},
 			},
@@ -186,9 +186,9 @@ func TestCheckPRStatus(t *testing.T) {
 			},
 			want: []InvalidChecks{
 				{
-					Name:           "timed out check",
-					Message:        "this check failed because it timed out",
-					Status:         Failure,
+					Name:       "timed out check",
+					Message:    "this check failed because it timed out",
+					Status:     Failure,
 					RetryAfter: 0,
 				},
 			},
@@ -210,9 +210,9 @@ func TestCheckPRStatus(t *testing.T) {
 			},
 			want: []InvalidChecks{
 				{
-					Name:           "stale check",
-					Message:        "this check failed because it was stale",
-					Status:         Failure,
+					Name:       "stale check",
+					Message:    "this check failed because it was stale",
+					Status:     Failure,
 					RetryAfter: 0,
 				},
 			},
@@ -234,9 +234,9 @@ func TestCheckPRStatus(t *testing.T) {
 			},
 			want: []InvalidChecks{
 				{
-					Name:           "default check",
-					Message:        "unaccounted for state conclusion: ",
-					Status:         Failure,
+					Name:       "default check",
+					Message:    "unaccounted for state conclusion: ",
+					Status:     Failure,
 					RetryAfter: 0,
 				},
 			},
@@ -258,9 +258,9 @@ func TestCheckPRStatus(t *testing.T) {
 			},
 			want: []InvalidChecks{
 				{
-					Name:           "in progress short running check",
-					Message:        "this check is in_progress and has just been started. check back again in " + mockRetryAfterShort.String(),
-					Status:         Pending,
+					Name:       "in progress short running check",
+					Message:    "this check is in_progress and has just been started. check back again in " + mockRetryAfterShort.String(),
+					Status:     Pending,
 					RetryAfter: mockRetryAfterShort,
 				},
 			},
@@ -282,9 +282,9 @@ func TestCheckPRStatus(t *testing.T) {
 			},
 			want: []InvalidChecks{
 				{
-					Name:           "in progress long running check",
-					Message:        "this check has been in_progress for at least 10 mins, looks like something has gone wrong?",
-					Status:         Pending,
+					Name:       "in progress long running check",
+					Message:    "this check has been in_progress for at least 10 mins, looks like something has gone wrong?",
+					Status:     Pending,
 					RetryAfter: 0,
 				},
 			},
@@ -306,9 +306,9 @@ func TestCheckPRStatus(t *testing.T) {
 			},
 			want: []InvalidChecks{
 				{
-					Name:           "queued short running check",
-					Message:        "this check has been queued for less than 10 minutes, check back again in " + mockRetryAfterShort.String(),
-					Status:         Pending,
+					Name:       "queued short running check",
+					Message:    "this check has been queued for less than 10 minutes, check back again in " + mockRetryAfterShort.String(),
+					Status:     Pending,
 					RetryAfter: mockRetryAfterShort,
 				},
 			},
@@ -330,9 +330,9 @@ func TestCheckPRStatus(t *testing.T) {
 			},
 			want: []InvalidChecks{
 				{
-					Name:           "queued long running check",
-					Message:        "this check has been queued for at least 10 mins, looks like something has gone wrong?",
-					Status:         Pending,
+					Name:       "queued long running check",
+					Message:    "this check has been queued for at least 10 mins, looks like something has gone wrong?",
+					Status:     Pending,
 					RetryAfter: 0,
 				},
 			},

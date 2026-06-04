@@ -23,9 +23,9 @@ func TestCompletedCheck(t *testing.T) {
 			prStatus: nil,
 			want: []InvalidChecks{
 				{
-					Name:           "successful check",
-					Message:        "this check completed successfully",
-					Status:         Success,
+					Name:       "successful check",
+					Message:    "this check completed successfully",
+					Status:     Success,
 					RetryAfter: 0,
 				},
 			},
@@ -39,9 +39,9 @@ func TestCompletedCheck(t *testing.T) {
 			prStatus: nil,
 			want: []InvalidChecks{
 				{
-					Name:           "skipped check",
-					Message:        "this check was skipped",
-					Status:         Success,
+					Name:       "skipped check",
+					Message:    "this check was skipped",
+					Status:     Success,
 					RetryAfter: 0,
 				},
 			},
@@ -55,9 +55,9 @@ func TestCompletedCheck(t *testing.T) {
 			prStatus: []InvalidChecks{},
 			want: []InvalidChecks{
 				{
-					Name:           "failed check",
-					Message:        "this check failed, check your pr and ammend",
-					Status:         Failure,
+					Name:       "failed check",
+					Message:    "this check failed, check your pr and ammend",
+					Status:     Failure,
 					RetryAfter: 0,
 				},
 			},
@@ -71,9 +71,9 @@ func TestCompletedCheck(t *testing.T) {
 			prStatus: []InvalidChecks{},
 			want: []InvalidChecks{
 				{
-					Name:           "action required check",
-					Message:        "this check failed because an action is required, check your pr and ammend",
-					Status:         Failure,
+					Name:       "action required check",
+					Message:    "this check failed because an action is required, check your pr and ammend",
+					Status:     Failure,
 					RetryAfter: 0,
 				},
 			},
@@ -87,9 +87,9 @@ func TestCompletedCheck(t *testing.T) {
 			prStatus: []InvalidChecks{},
 			want: []InvalidChecks{
 				{
-					Name:           "cancelled check",
-					Message:        "this check failed because somebody manually cancelled the check",
-					Status:         Failure,
+					Name:       "cancelled check",
+					Message:    "this check failed because somebody manually cancelled the check",
+					Status:     Failure,
 					RetryAfter: 0,
 				},
 			},
@@ -103,9 +103,9 @@ func TestCompletedCheck(t *testing.T) {
 			prStatus: []InvalidChecks{},
 			want: []InvalidChecks{
 				{
-					Name:           "timed out check",
-					Message:        "this check failed because it timed out",
-					Status:         Failure,
+					Name:       "timed out check",
+					Message:    "this check failed because it timed out",
+					Status:     Failure,
 					RetryAfter: 0,
 				},
 			},
@@ -119,9 +119,9 @@ func TestCompletedCheck(t *testing.T) {
 			prStatus: []InvalidChecks{},
 			want: []InvalidChecks{
 				{
-					Name:           "stale check",
-					Message:        "this check failed because it was stale",
-					Status:         Failure,
+					Name:       "stale check",
+					Message:    "this check failed because it was stale",
+					Status:     Failure,
 					RetryAfter: 0,
 				},
 			},
@@ -135,9 +135,9 @@ func TestCompletedCheck(t *testing.T) {
 			prStatus: []InvalidChecks{},
 			want: []InvalidChecks{
 				{
-					Name:           "unknown check",
-					Message:        "unaccounted for state conclusion: unknown",
-					Status:         Failure,
+					Name:       "unknown check",
+					Message:    "unaccounted for state conclusion: unknown",
+					Status:     Failure,
 					RetryAfter: 0,
 				},
 			},

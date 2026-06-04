@@ -19,11 +19,11 @@ const (
 )
 
 type InvalidChecks struct {
-	Name           string
-	Message        string
-	Status         Status
+	Name       string
+	Message    string
+	Status     Status
 	RetryAfter time.Duration
-	URL            string
+	URL        string
 }
 
 func CheckPRStatus(checks *github.ListCheckRunsResults, getTimeSince func(time.Time) time.Duration) []InvalidChecks {
