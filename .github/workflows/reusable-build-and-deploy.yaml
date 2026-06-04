@@ -1,0 +1,145 @@
+name: Reusable build and deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: GitHub environment name (for approvals and scoped vars/secrets)
+        required: true
+        type: string
+      cluster:
+        description: Logical cluster name written into chart values
+        required: true
+        type: string
+      ingress_colour:
+        description: Ingress colour suffix for ingress identifier
+        required: true
+        type: string
+      aws_region:
+        description: AWS region for ECR authentication
+        required: false
+        default: eu-west-2
+        type: string
+      image_tag:
+        description: API image tag to publish/deploy
+        required: false
+        default: latest
+        type: string
+      slackbot_image_tag:
+        description: Slackbot image tag to publish/deploy
+        required: false
+        default: slackbot_latest
+        type: string
+      checkout_ref:
+        description: Git ref (branch/tag/SHA) to check out before build
+        required: false
+        default: ""
+        type: string
+    secrets:
+      ECR_ROLE_TO_ASSUME:
+        required: true
+      KUBE_CERT:
+        required: true
+      KUBE_CLUSTER:
+        required: true
+      KUBE_NAMESPACE:
+        required: true
+      KUBE_TOKEN:
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-push-deploy:
+    name: Build, push and deploy
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      IMAGE_TAG: ${{ inputs.image_tag }}
+      SLACKBOT_IMAGE_TAG: ${{ inputs.slackbot_image_tag }}
+      ECR_REPO: ${{ vars.ECR_REPOSITORY }}
+      AWS_REGION: ${{ inputs.aws_region }}
+      CLUSTER: ${{ inputs.cluster }}
+      INGRESS_COLOUR: ${{ inputs.ingress_colour }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.checkout_ref != '' && inputs.checkout_ref || github.ref }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
+        with:
+          role-to-assume: ${{ secrets.ECR_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@fa648b43de3d4d023bcb3f89ed6940096949c419 # v2.1.5
+
+      - name: Build, tag, and push images to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t "$REGISTRY/$ECR_REPO:$SLACKBOT_IMAGE_TAG" slackbot/
+          docker push "$REGISTRY/$ECR_REPO:$SLACKBOT_IMAGE_TAG"
+
+          docker build -t "$REGISTRY/$ECR_REPO:$IMAGE_TAG" api/
+          docker push "$REGISTRY/$ECR_REPO:$IMAGE_TAG"
+
+      - name: Create certificate authority file
+        shell: bash
+        run: echo "${{ secrets.KUBE_CERT }}" > ca.crt
+
+      - name: Authenticate to the cluster
+        shell: bash
+        env:
+          KUBE_CLUSTER: ${{ secrets.KUBE_CLUSTER }}
+          KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+          KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+        run: |
+          kubectl config set-cluster "$KUBE_CLUSTER" --certificate-authority=ca.crt --server="https://$KUBE_CLUSTER"
+          kubectl config set-credentials deploy-user --token="$KUBE_TOKEN"
+          kubectl config set-context "$KUBE_CLUSTER" --cluster="$KUBE_CLUSTER" --user=deploy-user --namespace="$KUBE_NAMESPACE"
+          kubectl config use-context "$KUBE_CLUSTER"
+
+          echo 'FLAT_KUBE_CONFIG<<EOF' >> "$GITHUB_ENV"
+          kubectl config view --flatten >> "$GITHUB_ENV"
+          echo 'EOF' >> "$GITHUB_ENV"
+
+      - name: Deploy image to Kubernetes
+        shell: bash
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+        run: |
+          KUBECONFIG_TEMP=$(mktemp)
+          echo "$FLAT_KUBE_CONFIG" > "$KUBECONFIG_TEMP"
+          export KUBECONFIG="$KUBECONFIG_TEMP"
+
+          helm upgrade --install modernisation-platform-slackbot deploy \
+            --namespace "$KUBE_NAMESPACE" \
+            --values deploy/values.yaml \
+            --values "deploy/values-${{ inputs.environment }}.yaml" \
+            --set-string ecrUrl="$REGISTRY/$ECR_REPO" \
+            --set-string imageTag="$IMAGE_TAG" \
+            --set-string slackbotImageTag="$SLACKBOT_IMAGE_TAG" \
+            --set-string cluster="$CLUSTER" \
+            --set-string ingressIdentifier="api-${KUBE_NAMESPACE}-${INGRESS_COLOUR}" \
+            --set-string namespace="$KUBE_NAMESPACE"
+
+          kubectl rollout restart deployment/api deployment/slackbot --namespace "$KUBE_NAMESPACE"
+          kubectl rollout status deployment/api --namespace "$KUBE_NAMESPACE" --timeout=300s
+          kubectl rollout status deployment/slackbot --namespace "$KUBE_NAMESPACE" --timeout=300s
+
+          rm -f "$KUBECONFIG_TEMP"

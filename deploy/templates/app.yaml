@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: {{ .Values.api.replicas }}
+  strategy:
+    type: {{ .Values.deploymentStrategy.type }}
+  selector:
+    matchLabels:
+      name: api
+  template:
+    metadata:
+      labels:
+        name: api
+    spec:
+      containers:
+        - name: application
+          image: '{{ .Values.ecrUrl }}:{{ .Values.imageTag }}'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            failureThreshold: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 6
+          securityContext:
+{{ toYaml .Values.securityContext | indent 12 }}
+          resources:
+{{ toYaml .Values.api.resources | indent 12 }}
+          env:
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-token
+                  key: github-token
+            - name: GIN_MODE
+              value: "release"
+            - name: GITHUB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: github-url
+                  key: github-url
+            - name: GITHUB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: github-user
+                  key: github-user
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slackbot
+spec:
+  replicas: {{ .Values.slackbot.replicas }}
+  strategy:
+    type: {{ .Values.deploymentStrategy.type }}
+  selector:
+    matchLabels:
+      name: slackbot
+  template:
+    metadata:
+      labels:
+        name: slackbot
+    spec:
+      containers:
+        - name: application
+          image: '{{ .Values.ecrUrl }}:{{ .Values.slackbotImageTag }}'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          securityContext:
+{{ toYaml .Values.securityContext | indent 12 }}
+          resources:
+{{ toYaml .Values.slackbot.resources | indent 12 }}
+          env:
+            - name: ENVIRONMENT
+              value: '{{ .Values.slackbot.environment }}'
+            - name: API_URL
+              valueFrom:
+                secretKeyRef:
+                  name: api-url
+                  key: api-url
+            - name: GITHUB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: github-url
+                  key: github-url
+            - name: SLACK_APP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: slack-app-token
+                  key: slack-app-token
+            - name: SLACK_SIGNING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: slack-signing-secret
+                  key: slack-signing-secret
+            - name: SLACK_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: slack-bot-token
+                  key: slack-bot-token
+            - name: SLACK_CHANNEL_ID
+              valueFrom:
+                secretKeyRef:
+                  name: slack-channel-id
+                  key: slack-channel-id
+

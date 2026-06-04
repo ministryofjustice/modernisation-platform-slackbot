@@ -1,0 +1,9 @@
+slackbot:
+  environment: production
+  replicas: 2
+
+api:
+  replicas: 2
+
+deploymentStrategy:
+  type: RollingUpdate
