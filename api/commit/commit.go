@@ -20,7 +20,6 @@ func CloneRepo(url string) (*git.Repository, error) {
 		return nil, fmt.Errorf("an error occurred at clone: %v", err)
 	}
 	return r, err
-
 }
 
 func OpenRepo() (*git.Repository, error) {
