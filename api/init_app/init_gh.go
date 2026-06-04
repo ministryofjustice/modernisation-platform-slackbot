@@ -21,7 +21,7 @@ func InitGH(token string) (*github.Client, error) {
 	client = github.NewClient(tc)
 
 	if token == "" {
-		return nil, errors.New("You must provide a github token to avoid rate limits")
+		return nil, errors.New("you must provide a github token to avoid rate limits")
 	}
 
 	return client, nil

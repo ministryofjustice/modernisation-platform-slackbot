@@ -22,7 +22,7 @@ type InvalidChecks struct {
 	Name           string
 	Message        string
 	Status         Status
-	RetryInNanoSec time.Duration
+	RetryAfter time.Duration
 	URL            string
 }
 

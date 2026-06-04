@@ -14,7 +14,9 @@ func InitEnvVars() (string, string, string, string) {
 	ginMode := "debug"
 	ginModeVal, ginModePresent := os.LookupEnv("GIN_MODE")
 	if ginModeVal == "" || !ginModePresent {
-		os.Setenv("GIN_MODE", ginMode)
+		if err := os.Setenv("GIN_MODE", ginMode); err != nil {
+			log.Fatalf("failed to set GIN_MODE: %v", err)
+		}
 		ginModeVal = ginMode
 	}
 

@@ -37,7 +37,7 @@ func wrapTimeSince(mins int64) func(time.Time) time.Duration {
 func TestCheckPRStatus(t *testing.T) {
 	tenMins := time.Duration(10 * time.Minute)
 	inProgressTime := time.Now().Add(-9 * time.Minute)
-	mockRetryInNanoSecShort := tenMins - wrapTimeSince(9)(inProgressTime)
+	mockRetryAfterShort := tenMins - wrapTimeSince(9)(inProgressTime)
 
 	type args struct {
 		checks       *github.ListCheckRunsResults
@@ -69,7 +69,7 @@ func TestCheckPRStatus(t *testing.T) {
 					Name:           "successful check",
 					Message:        "this check completed successfully",
 					Status:         Success,
-					RetryInNanoSec: 0,
+					RetryAfter: 0,
 				},
 			},
 		},
@@ -93,7 +93,7 @@ func TestCheckPRStatus(t *testing.T) {
 					Name:           "skipped check",
 					Message:        "this check was skipped",
 					Status:         Success,
-					RetryInNanoSec: 0,
+					RetryAfter: 0,
 				},
 			},
 		},
@@ -117,7 +117,7 @@ func TestCheckPRStatus(t *testing.T) {
 					Name:           "failed check",
 					Message:        "this check failed, check your pr and ammend",
 					Status:         Failure,
-					RetryInNanoSec: 0,
+					RetryAfter: 0,
 				},
 			},
 		},
@@ -141,7 +141,7 @@ func TestCheckPRStatus(t *testing.T) {
 					Name:           "action required check",
 					Message:        "this check failed because an action is required, check your pr and ammend",
 					Status:         Failure,
-					RetryInNanoSec: 0,
+					RetryAfter: 0,
 				},
 			},
 		},
@@ -165,7 +165,7 @@ func TestCheckPRStatus(t *testing.T) {
 					Name:           "cancelled check",
 					Message:        "this check failed because somebody manually cancelled the check",
 					Status:         Failure,
-					RetryInNanoSec: 0,
+					RetryAfter: 0,
 				},
 			},
 		},
@@ -189,7 +189,7 @@ func TestCheckPRStatus(t *testing.T) {
 					Name:           "timed out check",
 					Message:        "this check failed because it timed out",
 					Status:         Failure,
-					RetryInNanoSec: 0,
+					RetryAfter: 0,
 				},
 			},
 		},
@@ -213,7 +213,7 @@ func TestCheckPRStatus(t *testing.T) {
 					Name:           "stale check",
 					Message:        "this check failed because it was stale",
 					Status:         Failure,
-					RetryInNanoSec: 0,
+					RetryAfter: 0,
 				},
 			},
 		},
@@ -237,7 +237,7 @@ func TestCheckPRStatus(t *testing.T) {
 					Name:           "default check",
 					Message:        "unaccounted for state conclusion: ",
 					Status:         Failure,
-					RetryInNanoSec: 0,
+					RetryAfter: 0,
 				},
 			},
 		},
@@ -259,9 +259,9 @@ func TestCheckPRStatus(t *testing.T) {
 			want: []InvalidChecks{
 				{
 					Name:           "in progress short running check",
-					Message:        "this check is in_progress and has just been started. check back again in " + mockRetryInNanoSecShort.String(),
+					Message:        "this check is in_progress and has just been started. check back again in " + mockRetryAfterShort.String(),
 					Status:         Pending,
-					RetryInNanoSec: mockRetryInNanoSecShort,
+					RetryAfter: mockRetryAfterShort,
 				},
 			},
 		},
@@ -285,7 +285,7 @@ func TestCheckPRStatus(t *testing.T) {
 					Name:           "in progress long running check",
 					Message:        "this check has been in_progress for at least 10 mins, looks like something has gone wrong?",
 					Status:         Pending,
-					RetryInNanoSec: 0,
+					RetryAfter: 0,
 				},
 			},
 		},
@@ -307,9 +307,9 @@ func TestCheckPRStatus(t *testing.T) {
 			want: []InvalidChecks{
 				{
 					Name:           "queued short running check",
-					Message:        "this check has been queued for less than 10 minutes, check back again in " + mockRetryInNanoSecShort.String(),
+					Message:        "this check has been queued for less than 10 minutes, check back again in " + mockRetryAfterShort.String(),
 					Status:         Pending,
-					RetryInNanoSec: mockRetryInNanoSecShort,
+					RetryAfter: mockRetryAfterShort,
 				},
 			},
 		},
@@ -333,7 +333,7 @@ func TestCheckPRStatus(t *testing.T) {
 					Name:           "queued long running check",
 					Message:        "this check has been queued for at least 10 mins, looks like something has gone wrong?",
 					Status:         Pending,
-					RetryInNanoSec: 0,
+					RetryAfter: 0,
 				},
 			},
 		},
