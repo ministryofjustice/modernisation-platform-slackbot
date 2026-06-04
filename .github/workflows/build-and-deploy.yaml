@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - checkout_ref: ${{ github.event_name == 'workflow_dispatch' && inputs.development_branch || github.ref_name }}
+          - checkout_ref: ${{ github.event_name == 'workflow_dispatch' && inputs.development_branch || github.ref }}
     uses: ./.github/workflows/reusable-build-and-deploy.yaml
     with:
       environment: development
