@@ -40,6 +40,7 @@ API_URL=http://api:3000
 
 | Variable | Description | Where to obtain |
 |---|---|---|
+| `SLACK_CHANNEL_ID` | The id of the slack channel | Use a separate channel with a different slack app for local development |
 | `GITHUB_TOKEN` | Personal access token with access to the environments repository | GitHub Settings → Developer settings → Personal access tokens |
 | `GITHUB_URL` | Repository URL used by the API and Slack bot for PR matching | Use `https://github.com/ministryofjustice/modernisation-platform-environments.git` |
 | `GITHUB_USER` | GitHub username associated with `GITHUB_TOKEN` | Your GitHub profile |
@@ -92,7 +93,7 @@ Pull request / push to main
   Lint (staticcheck) → Run tests (go-test)
         │
         ▼
-  Deploy → development
+  Deploy → development - requires environment approval
         │  (must succeed)
         ▼
   Deploy → production  ← requires environment approval + main branch only
@@ -111,6 +112,7 @@ Pull request / push to main
    - Uploads test logs as artifacts
 
 3. **deploy-development** (depends on both lint and test jobs)
+   - Requires approval as defined in the `development` Github environment
    - Deploys on every pull request or push to `main`
    - For manual runs, a target branch can be specified via the `development_branch` input
 
