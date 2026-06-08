@@ -40,6 +40,7 @@ API_URL=http://api:3000
 
 | Variable | Description | Where to obtain |
 |---|---|---|
+| `SLACK_CHANNEL_ID` | The id of the slack channel | Use a separate channel with a different slack app for local development |
 | `GITHUB_TOKEN` | Personal access token with access to the environments repository | GitHub Settings → Developer settings → Personal access tokens |
 | `GITHUB_URL` | Repository URL used by the API and Slack bot for PR matching | Use `https://github.com/ministryofjustice/modernisation-platform-environments.git` |
 | `GITHUB_USER` | GitHub username associated with `GITHUB_TOKEN` | Your GitHub profile |
@@ -76,30 +77,48 @@ docker compose build slackbot
 
 | Workflow | Trigger | Purpose |
 |---|---|---|
-| [Build and deploy](.github/workflows/build-and-deploy.yaml) | Pull request, push to `main`, manual | Builds Docker images, pushes to ECR, deploys to Kubernetes |
-| [Reusable build and deploy](.github/workflows/reusable-build-and-deploy.yaml) | Called by build-and-deploy | Shared build and deploy logic for all environments |
-| [Test Go code](.github/workflows/go-tests.yaml) | Pull request, push to `main` | Runs Go unit tests with race detection and uploads coverage to Codecov |
-| [Lint and vet Go code](.github/workflows/go-vert-lint-deps.yaml) | Pull request (`.go` files changed), manual | Runs `gofumpt` formatting check and `golangci-lint` |
+| [Build and Deploy](.github/workflows/build-deploy.yaml) | Pull request, push to `main`, manual | Validates code with staticcheck (lint), runs Go tests, builds Docker images, pushes to ECR, deploys to Kubernetes |
+| [Reusable build and deploy](.github/workflows/reusable-build-and-deploy.yaml) | Called by build-deploy | Shared build and deploy logic for all environments |
 | [Code quality tests](.github/workflows/code-analysis.yaml) | Pull request to `main` | Runs CodeQL static analysis on the Go codebase |
 | [Dependency review](.github/workflows/dependency-review.yml) | Pull request to `main` | Blocks critical severity dependency vulnerabilities |
-| [Test Dockerfile](.github/workflows/test-dockerfile.yaml) | Pull request | Builds the API Docker image and runs container structure tests |
 
 ### Deployment pipeline
 
-The build-and-deploy workflow always runs development first, then production in sequence:
+The build-deploy workflow runs jobs in sequence: lint first (fail-fast), then tests, then deployment.
 
 ```
 Pull request / push to main
         │
         ▼
-  Deploy → development
+  Lint (staticcheck) → Run tests (go-test)
+        │
+        ▼
+  Deploy → development - requires environment approval
         │  (must succeed)
         ▼
   Deploy → production  ← requires environment approval + main branch only
 ```
 
-- **Development** deploys on every pull request or push to `main`. For manual runs, a target branch can be specified via the `development_branch` input.
-- **Production** runs only when the ref is `main`, after development succeeds, and requires approval configured on the `production` GitHub environment.
+**Job execution order:**
+
+1. **staticcheck** (runs first, no dependencies)
+   - Installs and runs `gofumpt` formatting check
+   - Runs `golangci-lint` for code quality
+
+2. **go-test** (depends on staticcheck)
+   - Runs on `ubuntu-latest` and `macos-latest` matrix
+   - Runs `go test -race` with coverage reporting
+   - Uploads coverage to Codecov (Ubuntu only to avoid duplicates)
+   - Uploads test logs as artifacts
+
+3. **deploy-development** (depends on both lint and test jobs)
+   - Requires approval as defined in the `development` Github environment
+   - Deploys on every pull request or push to `main`
+   - For manual runs, a target branch can be specified via the `development_branch` input
+
+4. **deploy-production** (conditional: main branch only)
+   - Runs only when the ref is `main`, after development succeeds
+   - Requires approval configured on the `production` GitHub environment
 
 ## Helm chart
 
