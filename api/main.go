@@ -5,8 +5,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/ministryofjustice/cloud-platform-hammer-bot/init_app"
-	"github.com/ministryofjustice/cloud-platform-hammer-bot/utils"
+	"github.com/ministryofjustice/modernisation-platform-slackbot/init_app"
+	"github.com/ministryofjustice/modernisation-platform-slackbot/utils"
 )
 
 func main() {

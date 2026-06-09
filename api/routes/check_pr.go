@@ -7,13 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v57/github"
-	"github.com/ministryofjustice/cloud-platform-hammer-bot/pull_requests"
-	"github.com/ministryofjustice/cloud-platform-hammer-bot/utils"
-)
-
-var (
-	owner      = "ministryofjustice"
-	repository = "cloud-platform-environments"
+	"github.com/ministryofjustice/modernisation-platform-slackbot/pull_requests"
+	"github.com/ministryofjustice/modernisation-platform-slackbot/utils"
 )
 
 type PrChecks struct {
@@ -22,7 +17,7 @@ type PrChecks struct {
 	InvalidChecks []pull_requests.InvalidChecks
 }
 
-func InitGetCheckPR(r *gin.Engine, ghClient *github.Client) {
+func InitGetCheckPR(r *gin.Engine, ghClient *github.Client, owner, repository string) {
 	r.GET("/check-pr", func(c *gin.Context) {
 		ids := c.Query("id")
 		splitIds := strings.Split(ids, ",")

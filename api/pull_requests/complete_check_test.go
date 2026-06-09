@@ -21,14 +21,7 @@ func TestCompletedCheck(t *testing.T) {
 				Conclusion: github.String("success"),
 			},
 			prStatus: nil,
-			want: []InvalidChecks{
-				{
-					Name:       "successful check",
-					Message:    "this check completed successfully",
-					Status:     Success,
-					RetryAfter: 0,
-				},
-			},
+			want:     nil,
 		},
 		{
 			name: "skipped",
@@ -37,14 +30,7 @@ func TestCompletedCheck(t *testing.T) {
 				Conclusion: github.String("skipped"),
 			},
 			prStatus: nil,
-			want: []InvalidChecks{
-				{
-					Name:       "skipped check",
-					Message:    "this check was skipped",
-					Status:     Success,
-					RetryAfter: 0,
-				},
-			},
+			want:     nil,
 		},
 		{
 			name: "failure",

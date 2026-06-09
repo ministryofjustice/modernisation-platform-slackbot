@@ -1,4 +1,4 @@
-module github.com/ministryofjustice/cloud-platform-hammer-bot
+module github.com/ministryofjustice/modernisation-platform-slackbot
 
 go 1.25
 
