@@ -64,14 +64,7 @@ func TestCheckPRStatus(t *testing.T) {
 				},
 				getTimeSince: time.Since,
 			},
-			want: []InvalidChecks{
-				{
-					Name:       "successful check",
-					Message:    "this check completed successfully",
-					Status:     Success,
-					RetryAfter: 0,
-				},
-			},
+			want: nil,
 		},
 		{
 			name: "check is completed and skipped",
@@ -88,14 +81,7 @@ func TestCheckPRStatus(t *testing.T) {
 				},
 				getTimeSince: time.Since,
 			},
-			want: []InvalidChecks{
-				{
-					Name:       "skipped check",
-					Message:    "this check was skipped",
-					Status:     Success,
-					RetryAfter: 0,
-				},
-			},
+			want: nil,
 		},
 		{
 			name: "check is completed and failed",

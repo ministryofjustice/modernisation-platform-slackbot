@@ -12,10 +12,8 @@ func CompletedCheck(check *github.CheckRun, prStatus []InvalidChecks) []InvalidC
 	url := check.GetHTMLURL()
 
 	switch *check.Conclusion {
-	case "success":
-		prStatus = append(prStatus, InvalidChecks{name, "this check completed successfully", Success, 0, url})
-	case "skipped":
-		prStatus = append(prStatus, InvalidChecks{name, "this check was skipped", Success, 0, url})
+	case "success", "skipped":
+		// check passed or was intentionally skipped — not an invalid state, omit from results
 	case "failure":
 		prStatus = append(prStatus, InvalidChecks{name, "this check failed, check your pr and ammend", Failure, 0, url})
 	case "action_required":
