@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v57/github"
-	"github.com/ministryofjustice/cloud-platform-hammer-bot/pull_requests"
-	"github.com/ministryofjustice/cloud-platform-hammer-bot/utils"
+	"github.com/ministryofjustice/modernisation-platform-slackbot/pull_requests"
+	"github.com/ministryofjustice/modernisation-platform-slackbot/utils"
 )
 
 type PrChecks struct {
