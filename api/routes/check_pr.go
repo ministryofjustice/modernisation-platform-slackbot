@@ -11,18 +11,13 @@ import (
 	"github.com/ministryofjustice/cloud-platform-hammer-bot/utils"
 )
 
-var (
-	owner      = "ministryofjustice"
-	repository = "cloud-platform-environments"
-)
-
 type PrChecks struct {
 	ID            string `json:"Id"`
 	Branch        string `json:"Branch"`
 	InvalidChecks []pull_requests.InvalidChecks
 }
 
-func InitGetCheckPR(r *gin.Engine, ghClient *github.Client) {
+func InitGetCheckPR(r *gin.Engine, ghClient *github.Client, owner, repository string) {
 	r.GET("/check-pr", func(c *gin.Context) {
 		ids := c.Query("id")
 		splitIds := strings.Split(ids, ",")

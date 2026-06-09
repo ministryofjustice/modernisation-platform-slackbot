@@ -96,7 +96,7 @@ func GetBranch(ghClient *github.Client, owner, repository, prNumber string) (str
 		return "", err
 	}
 
-	pr, _, err := ghClient.PullRequests.Get(context.Background(), "ministryofjustice", "cloud-platform-environments", prInt)
+	pr, _, err := ghClient.PullRequests.Get(context.Background(), owner, repository, prInt)
 	if err != nil {
 		return "", err
 	}

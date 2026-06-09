@@ -1,7 +1,8 @@
 {
   "plan": {
     "name_patterns": [
-      "^plan"
+      "^plan",
+      "/ plan$"
     ]
   },
   "static_analysis": {
