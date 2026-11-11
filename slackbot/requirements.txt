@@ -1,2 +1,2 @@
 requests==2.34.2
-slack-bolt==1.23.0
+slack-bolt==1.30.0
