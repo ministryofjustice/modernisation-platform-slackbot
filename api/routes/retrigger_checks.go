@@ -2,8 +2,8 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/ministryofjustice/cloud-platform-hammer-bot/commit"
-	"github.com/ministryofjustice/cloud-platform-hammer-bot/utils"
+	"github.com/ministryofjustice/modernisation-platform-slackbot/commit"
+	"github.com/ministryofjustice/modernisation-platform-slackbot/utils"
 )
 
 func InitGetRetriggerChecks(r *gin.Engine, gh utils.GitHub) {

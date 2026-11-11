@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v57/github"
-	"github.com/ministryofjustice/cloud-platform-hammer-bot/utils"
+	"github.com/ministryofjustice/modernisation-platform-slackbot/utils"
 )
 
 type Status int
@@ -96,7 +96,7 @@ func GetBranch(ghClient *github.Client, owner, repository, prNumber string) (str
 		return "", err
 	}
 
-	pr, _, err := ghClient.PullRequests.Get(context.Background(), "ministryofjustice", "cloud-platform-environments", prInt)
+	pr, _, err := ghClient.PullRequests.Get(context.Background(), owner, repository, prInt)
 	if err != nil {
 		return "", err
 	}
