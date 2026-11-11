@@ -1,26 +1,19 @@
 # syntax=docker/dockerfile:1
-FROM golang:1.25.2-alpine3.22 AS builder
+FROM golang:1.27.3-alpine AS builder
 
 RUN addgroup -g 1000 -S appgroup && \
-  adduser -u 1000 -S appuser -G appgroup
-
-RUN mkdir /app
-RUN mkdir /app/environments
-
-RUN apk --no-cache add ca-certificates
+  adduser -u 1000 -S appuser -G appgroup && \
+  mkdir -p /app/environments && \
+  apk --no-cache add ca-certificates
 
 WORKDIR /app
 
 COPY . ./
 
-# Download all the dependencies
-RUN go mod download
-
-# Build the Go app
-RUN CGO_ENABLED=0 go build -o /app/main .
-
-RUN chown -R appuser:appgroup /app
-RUN chmod -R 755 /app
+RUN go mod download && \
+  CGO_ENABLED=0 go build -o /app/main . && \
+  chown -R appuser:appgroup /app && \
+  chmod -R 755 /app
 
 # second stage to obtain a very small image
 FROM scratch
