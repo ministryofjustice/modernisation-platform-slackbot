@@ -1,6 +1,7 @@
+---
 name: Reusable build and deploy
 
-on:
+"on":
   workflow_call:
     inputs:
       environment:
@@ -47,8 +48,7 @@ on:
       KUBE_TOKEN:
         required: true
 
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   build-push-deploy:
@@ -69,6 +69,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          persist-credentials: false
           ref: ${{ inputs.checkout_ref != '' && inputs.checkout_ref || github.ref }}
 
       - name: Set up QEMU
@@ -99,7 +100,9 @@ jobs:
 
       - name: Create certificate authority file
         shell: bash
-        run: echo "${{ secrets.KUBE_CERT }}" > ca.crt
+        env:
+          KUBE_CERT: ${{ secrets.KUBE_CERT }}
+        run: printf '%s\n' "$KUBE_CERT" > ca.crt
 
       - name: Authenticate to the cluster
         shell: bash
@@ -113,15 +116,18 @@ jobs:
           kubectl config set-context "$KUBE_CLUSTER" --cluster="$KUBE_CLUSTER" --user=deploy-user --namespace="$KUBE_NAMESPACE"
           kubectl config use-context "$KUBE_CLUSTER"
 
-          echo 'FLAT_KUBE_CONFIG<<EOF' >> "$GITHUB_ENV"
-          kubectl config view --flatten >> "$GITHUB_ENV"
-          echo 'EOF' >> "$GITHUB_ENV"
+          {
+            echo 'FLAT_KUBE_CONFIG<<EOF'
+            kubectl config view --flatten
+            echo 'EOF'
+          } >> "$GITHUB_ENV"
 
       - name: Deploy image to Kubernetes
         shell: bash
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           KUBE_NAMESPACE: ${{ secrets.KUBE_NAMESPACE }}
+          DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
         run: |
           KUBECONFIG_TEMP=$(mktemp)
           echo "$FLAT_KUBE_CONFIG" > "$KUBECONFIG_TEMP"
@@ -130,7 +136,7 @@ jobs:
           helm upgrade --install modernisation-platform-slackbot deploy \
             --namespace "$KUBE_NAMESPACE" \
             --values deploy/values.yaml \
-            --values "deploy/values-${{ inputs.environment }}.yaml" \
+            --values "deploy/values-${DEPLOY_ENVIRONMENT}.yaml" \
             --set-string ecrUrl="$REGISTRY/$ECR_REPO" \
             --set-string imageTag="$IMAGE_TAG" \
             --set-string slackbotImageTag="$SLACKBOT_IMAGE_TAG" \

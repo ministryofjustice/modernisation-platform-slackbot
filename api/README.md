@@ -4,6 +4,8 @@ This directory contains the Go API service for cloud-platform-hammer-bot.
 
 ## Build
 
+Use Go 1.27.3 or newer for local builds and tests.
+
 For local development, create a `.env` file in the repository root with the variables documented in [../README.md](../README.md).
 
 Then build or start the API from the repository root with Docker Compose:
