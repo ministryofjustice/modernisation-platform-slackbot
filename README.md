@@ -39,7 +39,7 @@ API_URL=http://api:3000
 ```
 
 | Variable | Description | Where to obtain |
-|---|---|---|
+| --- | --- | --- |
 | `SLACK_CHANNEL_ID` | The id of the slack channel | Use a separate channel with a different slack app for local development |
 | `GITHUB_TOKEN` | Personal access token with access to the environments repository | GitHub Settings → Developer settings → Personal access tokens |
 | `GITHUB_URL` | Repository URL used by the API and Slack bot for PR matching | Use `https://github.com/ministryofjustice/modernisation-platform-environments.git` |
@@ -76,7 +76,7 @@ docker compose build slackbot
 ## GitHub Actions workflows
 
 | Workflow | Trigger | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | [Build and Deploy](.github/workflows/build-deploy.yaml) | Pull request, push to `main`, manual | Validates code with staticcheck (lint), runs Go tests, builds Docker images, pushes to ECR, deploys to Kubernetes |
 | [Reusable build and deploy](.github/workflows/reusable-build-and-deploy.yaml) | Called by build-deploy | Shared build and deploy logic for all environments |
 | [Code quality tests](.github/workflows/code-analysis.yaml) | Pull request to `main` | Runs CodeQL static analysis on the Go codebase |
@@ -130,7 +130,7 @@ Values are layered in order:
 2. `deploy/values-<environment>.yaml` — environment-specific overrides
 
 | Parameter | Development | Production |
-|---|---|---|
+| --- | --- | --- |
 | `api.replicas` | 1 | 2 |
 | `slackbot.replicas` | 1 | 2 |
 | `deploymentStrategy.type` | `Recreate` | `RollingUpdate` |
